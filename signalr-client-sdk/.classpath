@@ -17,5 +17,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/gson-2.2.2.jar"/>
+	<classpathentry kind="lib" path="C:/src/Microsoft/MSOpenTech/SignalR/java-client/signalr-client-sdk/lib/java_websocket.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
