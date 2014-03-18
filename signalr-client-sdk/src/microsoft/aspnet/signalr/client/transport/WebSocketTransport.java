@@ -48,7 +48,7 @@ public class WebSocketTransport extends HttpClientTransport {
 
 	@Override
 	public String getName() {
-		return "serverSentEvents";
+		return "webSockets";
 	}
 
 	@Override
@@ -74,21 +74,22 @@ public class WebSocketTransport extends HttpClientTransport {
 			ConnectionType connectionType, final DataResultCallback callback) {
 		log("Start the communication with the server using WebSocket",
 				LogLevel.Information);
+		
+		String url = connection.getUrl() + (connectionType == ConnectionType.InitialConnection ? "connect" : "reconnect")
+                + TransportHelper.getReceiveQueryString(this, connection);
 
-		String protocol = "ws";
-		String url = connection.getUrl();
+		String serverLocation = url.replace("https", "wss").replace("http", "ws");
+		
+		log(url, LogLevel.Verbose);
 
-		String serverLocation = protocol + url;
-
-		SignalRFuture<Void> future = new SignalRFuture<Void>();
-		future.setResult(null);
+		final SignalRFuture<Void> future = new SignalRFuture<Void>();
 		URI uri = URI.create(serverLocation);
 
 		mClient = new WebSocketClient(uri) {
 
 			@Override
 			public void onOpen(ServerHandshake handshakedata) {
-				callback.onData(handshakedata.toString());
+				future.setResult(null);
 			}
 
 			@Override
@@ -98,11 +99,10 @@ public class WebSocketTransport extends HttpClientTransport {
 
 			@Override
 			public void onError(Exception ex) {
-				callback.onData(ex.getMessage());
+				future.triggerError(ex);
 			}
 
 			public void onClose(int code, String reason, boolean remote) {
-				callback.onData(reason);
 			}
 		};
 		mClient.connect();
